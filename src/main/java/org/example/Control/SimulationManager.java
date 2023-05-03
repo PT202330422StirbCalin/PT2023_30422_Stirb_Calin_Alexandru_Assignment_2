@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Vector;
 
 public class SimulationManager implements ActionListener {
@@ -39,10 +40,36 @@ public class SimulationManager implements ActionListener {
             shortestTime = new ShortestTime(server,gui);
             shortestQueue = new ShortestQueue(server,gui);
             if(gui.options.getSelectedItem() == "Shortest queue strategy"){
-                shortestQueue.run();
+                SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        shortestQueue.run();
+                        return null;
+                    }
+                    @Override
+                    protected void process(List<String> buffer) {
+                        for (String buf : buffer) {
+                            gui.appendLogs(buf);
+                        }
+                    }
+                };
+                worker.execute();
             }
             else if (gui.options.getSelectedItem() == "Shortest time strategy") {
-                shortestTime.run();
+                SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        shortestTime.run();
+                        return null;
+                    }
+                    @Override
+                    protected void process(List<String> buffer) {
+                        for (String buf : buffer) {
+                            gui.appendLogs(buf);
+                        }
+                    }
+                };
+                worker.execute();
             }
             writeLogToFile(gui.logs);
         }
