@@ -44,13 +44,14 @@ public class ShortestTime implements Runnable {
         int tasksProcessed = 0;
         double avgServiceTime;
         double avgWaitTime;
+        int size = tasks.size();
         Vector<Queue<Task>> queues = new Vector<Queue<Task>>();
         for (int i = 0; i < nrQueues; i++) {
             queues.add(new LinkedList<Task>());
         }
         AtomicInteger currentTime = new AtomicInteger(0);
         try {
-            while (tasksProcessed < tasks.size() || currentTime.get() <= simulationTime) {
+            while (tasksProcessed < size && currentTime.get() <= simulationTime) {
                 if (!tasks.isEmpty()) {
                     Task task = tasks.get(0);
                     if (task.getArrivalTime() <= currentTime.get()) {
@@ -67,6 +68,7 @@ public class ShortestTime implements Runnable {
                     for (Task ent : tasks) {
                         gui.appendLogs("(" + ent.getId() + "," + ent.getArrivalTime() + "," + ent.getServiceTime() + ") ");
                     }
+                    gui.appendLogs("\n");
                 }
                 for (Queue<Task> queue : queues) {
                     if (!queue.isEmpty()) {
@@ -83,7 +85,7 @@ public class ShortestTime implements Runnable {
                         }
                     }
                 }
-                gui.appendLogs("\n");
+
                 int ind = 1;
                 for (Queue<Task> queue : queues) {
                     if (!queue.isEmpty()) {
@@ -96,14 +98,16 @@ public class ShortestTime implements Runnable {
                     }
                     ind++;
                 }
+                gui.appendLogs("\n");
                 Thread.sleep(1000);
                 currentTime.incrementAndGet();
             }
             avgServiceTime = (double) totalServiceTime / totalTasks;
             avgWaitTime = (double) totalWaitTime / totalTasks;
+            gui.appendLogs("\nEnd of simulation logs:\n");
             gui.appendLogs("Average service time: " + avgServiceTime + "\n");
             gui.appendLogs("Average wait time: " + avgWaitTime + "\n");
-            gui.appendLogs("\n\n");
+            gui.appendLogs("Nr of processed tasks: "+ tasksProcessed);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
