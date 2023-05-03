@@ -4,11 +4,8 @@ import org.example.Model.Server;
 import org.example.Model.Task;
 import org.example.View.Gui;
 
-import javax.swing.*;
-import javax.swing.SwingUtilities;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,7 +18,7 @@ public class ShortestTime implements Runnable {
         this.gui = gui;
     }
 
-    private int getShortestQueue(Vector<Queue<Task>> queues) {
+    private int getQueueIndex(Vector<Queue<Task>> queues) {
         int shortestQueue = 0;
         for(int i = 0; i< queues.size(); i++){
             Queue<Task> queue = queues.get(i);
@@ -57,8 +54,8 @@ public class ShortestTime implements Runnable {
                 if (!tasks.isEmpty()) {
                     Task task = tasks.get(0);
                     if (task.getArrivalTime() <= currentTime.get()) {
-                        int shortestQueue = getShortestQueue(queues);
-                        queues.get(shortestQueue).add(task);
+                        int queueIndex = getQueueIndex(queues);
+                        queues.get(queueIndex).add(task);
                         totalTasks++;
                         totalServiceTime += task.getServiceTime();
                         tasks.remove(0);
