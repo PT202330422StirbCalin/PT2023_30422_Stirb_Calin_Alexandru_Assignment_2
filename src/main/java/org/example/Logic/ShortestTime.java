@@ -12,6 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ShortestTime implements Runnable {
     private Server server;
     private Gui gui;
+    private int threadIndex;
+
+    public ShortestTime(Server server, Gui gui, int threadIndex) {
+        this.server = server;
+        this.gui = gui;
+        this.threadIndex = threadIndex;
+    }
 
     public ShortestTime(Server server, Gui gui) {
         this.server = server;

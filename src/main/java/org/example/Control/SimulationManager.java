@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -63,9 +64,9 @@ public class SimulationManager implements ActionListener {
                         return null;
                     }
                     @Override
-                    protected void process(List<String> buffer) {
-                        for (String buf : buffer) {
-                            gui.appendLogs(buf);
+                    protected void process(List<String> chunks) {
+                        for (String chunk : chunks) {
+                            gui.appendLogs(chunk);
                         }
                     }
                 };

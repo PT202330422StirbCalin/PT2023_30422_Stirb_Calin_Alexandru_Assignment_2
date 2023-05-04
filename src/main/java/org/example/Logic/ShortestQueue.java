@@ -12,10 +12,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ShortestQueue implements Runnable{
     private Server server;
     private Gui gui;
+    private int threadIndex;
 
     public ShortestQueue(Server server, Gui gui) {
         this.server = server;
         this.gui = gui;
+    }
+
+    public ShortestQueue(Server server, Gui gui, int threadIndex) {
+        this.server = server;
+        this.gui = gui;
+        this.threadIndex = threadIndex;
     }
 
     private int getShortestQueue(Vector<Queue<Task>> queues) {
@@ -50,14 +57,14 @@ public class ShortestQueue implements Runnable{
         try {
             while (tasksProcessed < size && currentTime.get() <= simulationTime) {
                 if(!tasks.isEmpty()) {
-                    Task task = tasks.get(0);
+                    Task task = tasks.get(threadIndex);
                     if (task.getArrivalTime() <= currentTime.get()) {
                         int shortestQueue = getShortestQueue(queues);
                         if(shortestQueue != -1) {
                             queues.get(shortestQueue).add(task);
                             totalTasks++;
                             totalServiceTime += task.getServiceTime();
-                            tasks.remove(0);
+                            tasks.remove(threadIndex);
                         }
                         else totalWaitTime++;
                     }
