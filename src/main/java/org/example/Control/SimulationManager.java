@@ -53,6 +53,10 @@ public class SimulationManager implements ActionListener {
                             gui.appendLogs(buf);
                         }
                     }
+                    @Override
+                    protected void done() {
+                        writeLogToFile(gui.logs);
+                    }
                 };
                 worker.execute();
             }
@@ -69,10 +73,14 @@ public class SimulationManager implements ActionListener {
                             gui.appendLogs(chunk);
                         }
                     }
+                    @Override
+                    protected void done() {
+                        writeLogToFile(gui.logs);
+                    }
                 };
                 worker.execute();
             }
-            writeLogToFile(gui.logs);
+            //writeLogToFile(gui.logs);
         }
     }
     public void writeLogToFile(JTextArea logs){
