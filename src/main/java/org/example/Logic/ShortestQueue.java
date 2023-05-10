@@ -26,12 +26,15 @@ public class ShortestQueue implements Runnable{
     }
 
     private int getShortestQueue(Vector<Queue<Task>> queues) {
-        int shortestQueue = -1;
+        int shortestQueue = 0;
         for(int i = 0; i< queues.size(); i++){
             Queue<Task> queue = queues.get(i);
             if(queue.isEmpty()){
                 shortestQueue = i;
                 break;
+            }
+            if(shortestQueue == -1 || queue.size() < queues.get(shortestQueue).size()){
+                shortestQueue = i;
             }
         }
         return shortestQueue;
@@ -49,6 +52,7 @@ public class ShortestQueue implements Runnable{
         double avgServiceTime;
         double avgWaitTime;
         int size = tasks.size();
+        int index = 0;
         Vector<Queue<Task>> queues = new Vector<Queue<Task>>();
         for (int i = 0; i < nrQueues; i++) {
             queues.add(new LinkedList<Task>());
@@ -56,29 +60,35 @@ public class ShortestQueue implements Runnable{
         AtomicInteger currentTime = new AtomicInteger(0);
         try {
             while (tasksProcessed < size && currentTime.get() <= simulationTime) {
-                if(!tasks.isEmpty()) {
-                    Task task = tasks.get(threadIndex);
-                    if (task.getArrivalTime() <= currentTime.get()) {
-                        int shortestQueue = getShortestQueue(queues);
-                        if(shortestQueue != -1) {
-                            queues.get(shortestQueue).add(task);
+                if (!tasks.isEmpty() && index < tasks.size()) {
+                    for(int i = index; i<tasks.size();i++) {
+                        //if(i > index + nrQueues)
+                           // break;
+                        Task task = tasks.get(i);
+                        if (task.getArrivalTime() <= currentTime.get()) {
+                            int queueIndex = getShortestQueue(queues);
+                            queues.get(queueIndex).add(task);
                             totalTasks++;
                             totalServiceTime += task.getServiceTime();
-                            tasks.remove(threadIndex);
+                            //tasks.remove(0);
+                            index = i+1;
                         }
-                        else totalWaitTime++;
                     }
                 }
                 gui.appendLogs("Time: "+ currentTime.get()+"\n");
-                if(!tasks.isEmpty()) {
+                if (!tasks.isEmpty() && index < tasks.size()) {
                     gui.appendLogs("Not in queue: ");
-                    for (Task ent : tasks) {
+                    for (int i = index; i<tasks.size();i++) {
+                        Task ent = tasks.get(i);
                         gui.appendLogs("(" + ent.getId() + "," + ent.getArrivalTime() + "," + ent.getServiceTime() + ") ");
                     }
                     gui.appendLogs("\n");
                 }
                 for (Queue<Task> queue : queues) {
                     if (!queue.isEmpty()) {
+                        if (queue.size() > 1) {
+                            totalWaitTime++;
+                        }
                         Task taskAux = queue.peek();
                         if (taskAux.getServiceTime() == 1) {
                             queue.poll();
