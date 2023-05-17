@@ -1,9 +1,11 @@
 package org.example.Control;
 
+import org.example.Logic.Scheduler;
 import org.example.Logic.ShortestQueue;
 import org.example.Logic.ShortestTime;
 import org.example.Model.Server;
 import org.example.Model.Task;
+import org.example.Strategy;
 import org.example.View.Gui;
 
 import javax.swing.*;
@@ -20,13 +22,14 @@ public class SimulationManager implements ActionListener {
     private Server server;
     private ShortestTime shortestTime;
     private ShortestQueue shortestQueue;
+    private Vector<Thread> threads;
     public SimulationManager(Gui gui) {
         this.gui = gui;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == gui.startButton){
+        if (e.getSource() == gui.startButton) {
             gui.clearLogs();
             int nrClients = Integer.parseInt(gui.t1.getText());
             int nrQueues = Integer.parseInt(gui.t2.getText());
@@ -35,55 +38,17 @@ public class SimulationManager implements ActionListener {
             int maxArrivalTime = Integer.parseInt(gui.t5.getText());
             int minServiceTime = Integer.parseInt(gui.t6.getText());
             int maxServiceTime = Integer.parseInt(gui.t7.getText());
-            Vector<Task> tasks = Task.generateRandomClients(nrClients,maxArrivalTime,minArrivalTime,minServiceTime,maxServiceTime);
+            Vector<Task> tasks = Task.generateRandomClients(nrClients, maxArrivalTime, minArrivalTime, minServiceTime, maxServiceTime);
             Vector<Task> sorted = Task.createSortedClientsByArrival(tasks);
-            server = new Server(sorted,nrQueues,simulationTime);
-            shortestTime = new ShortestTime(server,gui);
-            shortestQueue = new ShortestQueue(server,gui);
-            if(gui.options.getSelectedItem() == "Shortest queue strategy"){
-                SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
-                    @Override
-                    protected Void doInBackground() throws Exception {
-                        shortestQueue.run();
-                        return null;
-                    }
-                    @Override
-                    protected void process(List<String> buffer) {
-                        for (String buf : buffer) {
-                            gui.appendLogs(buf);
-                        }
-                    }
-                    @Override
-                    protected void done() {
-                        writeLogToFile(gui.logs);
-                    }
-                };
-                worker.execute();
+
+            if (gui.options.getSelectedItem() == "Shortest queue strategy") {
+                Scheduler.simStartup(gui, nrQueues, sorted, simulationTime, Strategy.SHORTEST_QUEUE);
+            } else if (gui.options.getSelectedItem() == "Shortest time strategy") {
+                Scheduler.simStartup(gui, nrQueues, sorted, simulationTime, Strategy.SHORTEST_TIME);
             }
-            else if (gui.options.getSelectedItem() == "Shortest time strategy") {
-                SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
-                    @Override
-                    protected Void doInBackground() throws Exception {
-                        shortestTime.run();
-                        return null;
-                    }
-                    @Override
-                    protected void process(List<String> chunks) {
-                        for (String chunk : chunks) {
-                            gui.appendLogs(chunk);
-                        }
-                    }
-                    @Override
-                    protected void done() {
-                        writeLogToFile(gui.logs);
-                    }
-                };
-                worker.execute();
-            }
-            //writeLogToFile(gui.logs);
         }
     }
-    public void writeLogToFile(JTextArea logs){
+    public static void writeLogToFile(JTextArea logs){
         try(PrintWriter writer = new PrintWriter("log.txt")){
             String logText = logs.getText();
             writer.write(logText);

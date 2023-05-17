@@ -1,50 +1,73 @@
 package org.example.Model;
 
 import org.example.Model.Task;
+import org.example.View.Gui;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Server{
-    private Vector<Task> tasks;
-    private Vector<Queue<Task>> queues;
-    private int nrQueues,simulationTime;
+public class Server implements  Runnable{
 
-    public Server(Vector<Task> tasks, int nrQueues, int simulationTime) {
-        this.tasks = tasks;
-        this.nrQueues = nrQueues;
-        this.simulationTime = simulationTime;
-    }
+    private BlockingQueue<Task> taskQueue;
+    private int processedClients =0;
+    private int waitTime;
+    private Gui gui;
 
     public Server() {
+        this.waitTime = 0;
+        this.taskQueue = new LinkedBlockingDeque<>();
+    }
+    public BlockingQueue<Task> getTaskQueue() {
+        return taskQueue;
     }
 
-    public int getNrQueues() {
-        return nrQueues;
+    public int getWaitTime() {
+        return waitTime;
     }
 
-    public void setNrQueues(int nrQueues) {
-        this.nrQueues = nrQueues;
+    public void setWaitTime(int waitTime) {
+        this.waitTime = waitTime;
     }
 
-    public int getSimulationTime() {
-        return simulationTime;
+    public int getProcessedClients() {
+        return processedClients;
     }
 
-    public void setSimulationTime(int simulationTime) {
-        this.simulationTime = simulationTime;
+    public void setProcessedClients(int processedClients) {
+        this.processedClients = processedClients;
     }
 
-    public Vector<Task> getTasks() {
-        return tasks;
+    public void addTask(Task task){
+        this.taskQueue.add(task);
+        this.waitTime = this.waitTime+task.getServiceTime();
     }
 
-    public void setTasks(Vector<Task> tasks) {
-        this.tasks = tasks;
+    @Override
+    public void run() {
+        if(this.taskQueue.size()!= 0){
+            Task task = this.taskQueue.peek();
+            if(task.getServiceTime()-1 > 0){
+                task.setServiceTime(task.getServiceTime()-1);
+                try{
+                    Thread.sleep(1000);
+                }catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+            else{
+                try{
+                    this.taskQueue.take();
+                    processedClients++;
+                    }catch(InterruptedException e){
+                    e.printStackTrace();
+                    }
+            }
+        }
     }
-
 }
+
