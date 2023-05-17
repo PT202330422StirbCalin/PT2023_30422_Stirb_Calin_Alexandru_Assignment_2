@@ -1,20 +1,12 @@
 package org.example.Model;
 
-import org.example.Model.Task;
-import org.example.View.Gui;
-
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements  Runnable{
 
     private BlockingQueue<Task> taskQueue;
-    private int processedClients =0;
+    private int processedTasks =0;
     private int waitTime;
 
     public Server() {
@@ -33,12 +25,12 @@ public class Server implements  Runnable{
         this.waitTime = waitTime;
     }
 
-    public int getProcessedClients() {
-        return processedClients;
+    public int getProcessedTasks() {
+        return processedTasks;
     }
 
-    public void setProcessedClients(int processedClients) {
-        this.processedClients = processedClients;
+    public void setProcessedTasks(int processedTasks) {
+        this.processedTasks = processedTasks;
     }
 
     public void addTask(Task task){
@@ -61,7 +53,7 @@ public class Server implements  Runnable{
             else{
                 try{
                     this.taskQueue.take();
-                    processedClients++;
+                    processedTasks++;
                     }catch(InterruptedException e){
                     e.printStackTrace();
                     }

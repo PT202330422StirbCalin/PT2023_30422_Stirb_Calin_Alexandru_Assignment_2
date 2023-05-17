@@ -28,7 +28,7 @@ public class Scheduler {
     public static void simulation(Server servers[],int assigned[],Gui gui, int nrQueues, Vector<Task> tasks, int simulationTime, Strategy strategy) {
             final int[] totalWaitTime = {0};
             final int[] totalServiceTime = {0};
-            final AtomicInteger[] tasksProcessed = {new AtomicInteger()};
+            int[] tasksProcessed = {0};
             final AtomicInteger[] clientsInOneCycle = {new AtomicInteger()};
             AtomicInteger peakHour = new AtomicInteger(-1);
             final AtomicReference<Double>[] avgServiceTime = new AtomicReference[]{new AtomicReference<>((double) 0)};
@@ -36,7 +36,11 @@ public class Scheduler {
             AtomicInteger currentTime = new AtomicInteger(0);
             // without this thread it won't update in real time because of synchronization
             Thread mainThread = new Thread(() -> {
-                while (tasksProcessed[0].get() < tasks.size() && currentTime.get() <= simulationTime) {
+                while (tasksProcessed[0] < tasks.size() && currentTime.get() <= simulationTime) {
+                    if(tasksProcessed[0] == tasks.size()){
+                        break;
+                    }
+                    int processedTasks = 0;
                     int clientsInQueues = 0;
                     int queueIndex;
                     int i = 0;
@@ -66,6 +70,7 @@ public class Scheduler {
                     gui.appendLogs("\n");
                     int ind = 1;
                     for (Server server : servers) {
+                        processedTasks+= server.getProcessedTasks();
                         if (server.getTaskQueue().isEmpty()) {
                             gui.appendLogs("Queue " + ind + ": Closed" + "\n");
                         } else {
@@ -84,13 +89,11 @@ public class Scheduler {
                         clientsInOneCycle[0].set(clientsInQueues);
                         peakHour.set(currentTime.get());
                     }
+                    tasksProcessed[0]=processedTasks;
                     currentTime.incrementAndGet();
                 }
-                for (Server server : servers) {
-                    tasksProcessed[0].addAndGet(server.getProcessedClients());
-                }
-                avgServiceTime[0].set((double) totalServiceTime[0] / tasksProcessed[0].get());
-                avgWaitTime[0].set((double) totalWaitTime[0] / tasksProcessed[0].get());
+                avgServiceTime[0].set((double) totalServiceTime[0] / tasksProcessed[0]);
+                avgWaitTime[0].set((double) totalWaitTime[0] / tasksProcessed[0]);
                 gui.appendLogs("\nEnd of simulation logs:\n");
                 gui.appendLogs("Average service time: " + avgServiceTime[0] + "\n");
                 gui.appendLogs("Average wait time: " + avgWaitTime[0] + "\n");
