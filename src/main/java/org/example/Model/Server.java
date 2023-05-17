@@ -16,7 +16,6 @@ public class Server implements  Runnable{
     private BlockingQueue<Task> taskQueue;
     private int processedClients =0;
     private int waitTime;
-    private Gui gui;
 
     public Server() {
         this.waitTime = 0;
